@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<title>Contact V4</title>
+	<title>MPSIS project</title>
 	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta id="viewport" content="width=device-width, initial-scale=1">
 <!--===============================================================================================-->
 	<link rel="icon" type="image/png" href="images/icons/favicon.ico"/>
 <!--===============================================================================================-->
@@ -26,106 +26,77 @@
 
 				<div class="wrap-input100">
 					<span class="label-input100">Koszt metra kwadratowego działki.</span>
-					<input class="input100" type="number" name="m2_cost" placeholder="1000,2000,3000,...">
+					<input class="input100" type="number" id="m2_cost" placeholder="1000,2000,3000,...">
 					<span class="focus-input100"></span>
 				</div>
 
 				<div class="wrap-input100">
 					<span class="label-input100">Liczba producentów, od których kupujemy serwery.</span>
-					<input class="input100" type="number" name="num_server_vendors" placeholder="1,2,3,4,...">
+					<input class="input100" type="number" id="num_server_vendors" placeholder="1,2,3,4,...">
 					<span class="focus-input100"></span>
 				</div>
 
-                <!-- TODO - generate this based on previous input --!>
-				<div class="wrap-input100">
-					<span class="label-input100">Koszt serwera każdego producenta.</span>
-					<input class="input100" type="number" name="cost_server_vendor" placeholder="100,200,300,...">
-					<span class="focus-input100"></span>
-				</div>
+                <div id="generated_server_cost">
+                </div>
 
 				<div class="wrap-input100">
 					<span class="label-input100">Liczba producentów, od których kupujemy racki.</span>
-					<input class="input100" type="number" name="num_rack_vendors" placeholder="1,2,3,4,...">
+					<input class="input100" type="number" id="num_rack_vendors" placeholder="1,2,3,4,...">
 					<span class="focus-input100"></span>
 				</div>
 
-                <!-- TODO - generate this based on previous input --!>
-				<div class="wrap-input100">
-					<span class="label-input100">Koszt racka każdego producenta.</span>
-					<input class="input100" type="number" name="cost_rack_vendor" placeholder="100,200,300,...">
-					<span class="focus-input100"></span>
-				</div>
+                <div id="generated_rack_cost">
+                </div>
 
 				<div class="wrap-input100">
 					<span class="label-input100">Koszt kWh.</span>
-					<input class="input100" type="number" name="kWh_cost" placeholder="0.59,0.6,0.7,...">
+					<input class="input100" type="number" id="kWh_cost" placeholder="0.59,0.6,0.7,...">
 					<span class="focus-input100"></span>
 				</div>
 
 				<div class="wrap-input100">
 					<span class="label-input100">Maksymalna powierzchnia. [m2]</span>
-					<input class="input100" type="number" name="max_m2" placeholder="2000,4000,...">
+					<input class="input100" type="number" id="max_m2" placeholder="2000,4000,...">
 					<span class="focus-input100"></span>
 				</div>
 
 				<div class="wrap-input100">
 					<span class="label-input100">Minimalna liczba maszyn.</span>
-					<input class="input100" type="number" name="min_all_servers" placeholder="1000,2000,...">
+					<input class="input100" type="number" id="min_all_servers" placeholder="1000,2000,...">
 					<span class="focus-input100"></span>
 				</div>
 
-                <!-- TODO - generate this based on previous input --!>
-				<div class="wrap-input100">
-					<span class="label-input100">Maksymalna liczba serwerów od każdego producenta.</span>
-					<input class="input100" type="number" name="max_vendor_servers" placeholder="1000,2000,...">
-					<span class="focus-input100"></span>
-				</div>
+                <div id="generated_max_num_serv_vendor">
+                </div>
 
 				<div class="wrap-input100">
 					<span class="label-input100">Minimalna liczba racków.</span>
-					<input class="input100" type="number" name="min_num_racks" placeholder="1000,2000,...">
+					<input class="input100" type="number" id="min_num_racks" placeholder="1000,2000,...">
 					<span class="focus-input100"></span>
 				</div>
 
-                <!-- TODO - generate this based on previous input --!>
-				<div class="wrap-input100">
-					<span class="label-input100">Maksymalna liczba racków od każdego producenta.</span>
-					<input class="input100" type="number" name="max_vendor_racks" placeholder="1000,2000,...">
-					<span class="focus-input100"></span>
-				</div>
+                <div id="generated_max_num_rack_vendor">
+                </div>
 
 				<div class="wrap-input100">
 					<span class="label-input100">Maksymalny pobór prądu. [kWh]</span>
-					<input class="input100" type="number" name="max_kWh_usage" placeholder="1000,2000,...">
+					<input class="input100" type="number" id="max_kwh_usage" placeholder="1000,2000,...">
 					<span class="focus-input100"></span>
 				</div>
 
-                <!-- TODO - generate this based on previous input --!>
-				<div class="wrap-input100">
-					<span class="label-input100">Powierzchnia racka każdego producenta. [m2]</span>
-					<input class="input100" type="number" name="surface_vendor_rack" placeholder="100,200,300,...">
-					<span class="focus-input100"></span>
-				</div>
+                <div id="generated_rack_m2_vendor">
+                </div>
 
-                <!-- TODO - generate this based on previous input --!>
-				<div class="wrap-input100">
-					<span class="label-input100">Ilość serwerów mieszczących się w racku każdego producenta.</span>
-					<input class="input100" type="number" name="cost_rack_vendor" placeholder="100,200,300,...">
-					<span class="focus-input100"></span>
-				</div>
+                <div id="generated_server_in_rack_vendor">
+                </div>
 
-                <!-- TODO - generate this based on previous input --!>
-				<div class="wrap-input100">
-					<span class="label-input100">Miesięczny pobór prądu serwera każdego producenta</span>
-					<input class="input100" type="number" name="amount_elec_server_vendor" placeholder="100,200,300,...">
-					<span class="focus-input100"></span>
-				</div>
-
+                <div id="generated_monthly_elec_server_vendor">
+                </div>
 
 				<div class="wrap-input100 input100-select">
 					<span class="label-input100">Metoda rozwiązywania problemu</span>
 					<div>
-						<select class="selection-2" name="service">
+						<select class="selection-2" id="service">
 							<option>Branch&Bound</option>
 							<option>Branch&Cut</option>
 							<option>Cut&Branch</option>
@@ -138,7 +109,7 @@
 				<div class="container-contact100-form-btn">
 					<div class="wrap-contact100-form-btn">
 						<div class="contact100-form-bgbtn"></div>
-						<button class="contact100-form-btn">
+						<button id="submit" class="contact100-form-btn">
 							<span>
 								Wyślij!
 								<i class="fa fa-long-arrow-right m-l-7" aria-hidden="true"></i>
