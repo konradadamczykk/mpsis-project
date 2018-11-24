@@ -65,6 +65,25 @@
         $(thisAlert).removeClass('alert-validate');
     }
     
-    
+    $("#submit").on('click', () => {
+        var m2_cost = $("#m2_cost").val();
+        var num_server_vendors = $("#num_server_vendors").val();
+        var cost_server_vendor = $("#cost_server_vendor").val();
+        var num_rack_vendors = $("#num_rack_vendors").val();
+        var cost_rack_vendor = $("#cost_rack_vendor").val();
+        var kWh_cost = $("#kWh_cost").val();
+        var max_m2 = $("#max_m2").val();
+        var min_all_servers = $("#min_all_servers").val();
+        var max_vendor_servers = $("#max_vendor_servers").val();
+        var min_num_racks = $("#min_num_racks").val();
+        var max_vendor_racks = $("#max_vendor_racks").val();
+        var max_kwh_usage = $("#max_kwh_usage").val();
+        var surface_vendor_rack = $("#surface_vendor_rack").val();
+        var cost_rack_vendor = $("#cost_rack_vendor").val();
+        var amount_elec_server_vendor = $("#amount_elec_server_vendor").val();
+
+
+
+    });   
 
 })(jQuery);
