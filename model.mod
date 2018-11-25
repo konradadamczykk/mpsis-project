@@ -69,3 +69,49 @@ s.t. c7{serv in SERV}: x2[serv] <= M2[serv];				# dla kazdego producenta serwero
 s.t. c8{rack in RACK}: x3[rack] <= M3[rack];				# dla kazdego producenta rackow: nie mozemy przekroczyc liczby dostepnych
 s.t. c9: sum{serv in SERV} M2[serv] >= m2;				# suma dostepnych musi byc wieksza od minimalnej liczby
 s.t. c10: sum{rack in RACK} M3[rack] >= m3;				# suma dostepnych musi byc wieksza od minimalnej liczby
+
+# TYCH DANYCH OCZEKUJE MODEL, mogą być w osobnym pliku
+# Oczywiscie odpowiednie wymiary macierzy musza sie zgadzac.
+# po wiecej info, patrz model
+data;
+
+param l1 := 100;
+param l2 := 2;
+param l3 := 1;
+param l4 := 5;
+
+param : L2 :=
+1 3000
+2 3200
+;
+
+param : L3 :=
+1 10000
+;
+
+param m1 := 100000;
+param m2 := 200000;
+param : M2 :=
+1 80000
+2 130000
+;
+
+param m3 := 4000;
+param : M3 :=
+1 10000
+;
+
+param m4 := 65000000;
+
+param : w1 :=
+1 2
+;
+
+param w2 := 14;
+
+param : w3 :=
+1 400
+2 300
+;
+
+end;
