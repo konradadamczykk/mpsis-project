@@ -2,67 +2,21 @@
 (function ($) {
     "use strict";
 
-
-    /*==================================================================
-    [ Focus Contact2 ]*/
-    $('.input100').each(function(){
-        $(this).on('blur', function(){
-            if($(this).val().trim() != "") {
-                $(this).addClass('has-val');
-            }
-            else {
-                $(this).removeClass('has-val');
-            }
-        })    
-    })
-  
-  
-    /*==================================================================
-    [ Validate ]*/
-    var name = $('.validate-input input[name="name"]');
-    var email = $('.validate-input input[name="email"]');
-    var message = $('.validate-input textarea[name="message"]');
-
-
-    $('.validate-form').on('submit',function(){
-        var check = true;
-
-        if($(name).val().trim() == ''){
-            showValidate(name);
-            check=false;
-        }
-
-
-        if($(email).val().trim().match(/^([a-zA-Z0-9_\-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{1,5}|[0-9]{1,3})(\]?)$/) == null) {
-            showValidate(email);
-            check=false;
-        }
-
-        if($(message).val().trim() == ''){
-            showValidate(message);
-            check=false;
-        }
-
-        return check;
-    });
-
-
-    $('.validate-form .input100').each(function(){
-        $(this).focus(function(){
-           hideValidate(this);
-       });
-    });
-
-    function showValidate(input) {
-        var thisAlert = $(input).parent();
-
-        $(thisAlert).addClass('alert-validate');
-    }
-
-    function hideValidate(input) {
-        var thisAlert = $(input).parent();
-
-        $(thisAlert).removeClass('alert-validate');
+    function postData(url = '', data = {}) {
+      // Default options are marked with *
+        return fetch(url, {
+            method: "POST", // *GET, POST, PUT, DELETE, etc.
+            mode: "cors", // no-cors, cors, *same-origin
+            cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+            credentials: "same-origin", // include, *same-origin, omit
+            headers: {
+                "Content-Type": "application/json; charset=utf-8",
+            },
+            redirect: "follow", // manual, *follow, error
+            referrer: "no-referrer", // no-referrer, *client
+            body: JSON.stringify(data), // body data type must match "Content-Type" header
+        })
+        .then(response => response.json()); // parses response to JSON
     }
 
     $('#num_server_vendors').on('change', () => {
@@ -136,6 +90,9 @@
 
 
     $("#submit").on('click', () => {
+
+        var url = "";
+        
         var m2_cost = $("#m2_cost").val();
 
         var num_server_vendors = $("#num_server_vendors").val();
@@ -166,8 +123,28 @@
         var min_num_racks = $("#min_num_racks").val();
         var max_kwh_usage = $("#max_kwh_usage").val();
 
+        var form_data = {
+           "m2_cost" :  m2_cost,
+           "num_server_vendors" :  num_server_vendors,
+           "cost_server" :  cost_server,
+           "max_num_serv_vendor" :  max_num_serv_vendor,
+           "monthly_elec_server_vendor" :  monthly_elec_server_vendor,
+           "num_rack_vendors" :  num_rack_vendors,
+           "rack_surface_vendor" :  rack_surface_vendor,
+           "rack_cost_vendor" :  rack_cost_vendor,
+           "rack_max_num_vendor" :  rack_max_num_vendor,
+           "num_serv_in_rack_vendor" :  num_serv_in_rack_vendor,
+           "kWh_cost" :  kWh_cost,
+           "max_m2" :  max_m2,
+           "min_all_servers" :  min_all_servers,
+           "min_num_racks" :  min_num_racks,
+           "max_kwh_usage" :  max_kwh_usage
+        };
 
+        console.log(JSON.stringify(form_data));
+        postData(url, form_data)
+          .then(data => console.log(JSON.stringify(data)))
+          .catch(error => console.error(error));
 
-    });   
-
+    });
 })(jQuery);
