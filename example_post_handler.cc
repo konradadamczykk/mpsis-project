@@ -28,7 +28,7 @@ int main (int argc, const char *argv[])
     col_ub[2] = si->getInfinity();
     col_ub[3] = si->getInfinity();
 
-    int n_rows = 4;
+    int n_rows = 10;
     double * row_lb = new double[n_rows]; //the row lower bounds
     double * row_ub = new double[n_rows]; //the row upper bounds
 
@@ -97,8 +97,8 @@ int main (int argc, const char *argv[])
     row7.insert(1,serv[i]);
     row7.insert(2,0);
     row7.insert(3,1.0);
-    row_lb[5] = 0;
-    row_ub[5] = M2[i];
+    row_lb[6] = 0;
+    row_ub[6] = M2[i];
 
     // constraint 8
     // to też jest problematyczne
@@ -107,8 +107,8 @@ int main (int argc, const char *argv[])
     row8.insert(1,0);
     row8.insert(2,rack[i]);
     row8.insert(3,1.0);
-    row_lb[5] = 0;
-    row_ub[5] = M2[i];
+    row_lb[7] = 0;
+    row_ub[7] = M2[i];
 
     // constraint 9
     // i to również, ograniczenie jest na danych, nie na zmiennych?
@@ -117,8 +117,8 @@ int main (int argc, const char *argv[])
     row9.insert(1,0);
     row9.insert(2,0);
     row9.insert(3,0);
-    row_lb[5] = 0;
-    row_ub[5] = 0;
+    row_lb[8] = 0;
+    row_ub[8] = 0;
 
     // constraint 10
     // i to również, ograniczenie jest na danych, nie na zmiennych?
@@ -127,8 +127,8 @@ int main (int argc, const char *argv[])
     row10.insert(1,0);
     row10.insert(2,0);
     row10.insert(3,0);
-    row_lb[5] = 0;
-    row_ub[5] = 0;
+    row_lb[9] = 0;
+    row_ub[9] = 0;
 
     matrix->appendRow(row1);
     matrix->appendRow(row2);
