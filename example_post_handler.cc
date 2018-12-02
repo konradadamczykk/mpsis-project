@@ -6,141 +6,150 @@ int main (int argc, const char *argv[])
     // LOAD PROBLEM
     OsiClpSolverInterface *si = new OsiClpSolverInterface;
 
-    int n_cols = 4;
-    double * objective = new double[n_cols];//the objective coefficients
-    double * col_lb = new double[n_cols];//the column lower bounds
-    double * col_ub = new double[n_cols];//the column upper bounds
+    // data goes here:
+    int RACK = 1; int SERV = 1;
+    int l1, L2[RACK], L3[SERV], l4;
+    int m1, m2, M2[SERV], m3, M3[RACK], m4;
+    int w1[RACK], w2, w3[SERV];
+
+    // define objective and variable bounds
+    int x1_cols = 1; int x4_cols = 1;
+    int n_cols = x1_cols + x4_cols + SERV + RACK;
+    double * objective = new double[n_cols]; //the objective coefficients
+    double * col_lb = new double[n_cols]; //the column lower bounds
+    double * col_ub = new double[n_cols]; //the column upper bounds
 
     //minimize z: x1*l1 + (sum{serv in SERV} L2[serv]*x2[serv]) + (sum{rack in RACK} L3[rack]*x3[rack]) + x4*l4;
     objective[0] = l1;
-    objective[1] = /* sum_serv(l2[i]*x2[i]); */
-    objective[3] = /* sum_rack(l3[i]*x3[i]); */
-    objective[1] = l4;
+    for (int i = 0; i<SERV; i++) {
+            objective[i+1] = L2[i];
+    }
+    for (int i = 0; i<RACK; i++) {
+            objective[i+SERV+1] = L3[i];
+    }
+    objective[SERV+RACK+1] = l4;
 
     // variable bounds -> <0;inf>
-    col_lb[0] = 0.0;
-    col_lb[1] = 0.0;
-    col_lb[2] = 0.0;
-    col_lb[3] = 0.0;
+    for (int i = 0; i<SERV+RACK+2; i++) {
+        col_lb[i] = 0.0;
+        col_ub[i] = si->getInfinity();
+    }
 
-    col_ub[0] = si->getInfinity();
-    col_ub[1] = si->getInfinity();
-    col_ub[2] = si->getInfinity();
-    col_ub[3] = si->getInfinity();
-
-    int n_rows = 10;
+    // constraints
+    int n_rows = x1_cols + x4_cols + SERV*3 + RACK*2 + SERV*RACK; // using sum/iterating 3 times on both RACK AND SERV
     double * row_lb = new double[n_rows]; //the row lower bounds
     double * row_ub = new double[n_rows]; //the row upper bounds
 
-    // constraints
     CoinPackedMatrix * matrix = new CoinPackedMatrix(false,0,0);
     matrix->setDimensions(0, n_cols);
 
+    // Base vector with all zeros
+    int indices[n_rows];
+    const CoinPackedVector base_vector = new CoinPackedVector(n_rows, indices, 0.0);
+    int current_row = 0;
+    // WE ALSO NEED TO KNOW x1, first x2, first x3 and x4 positions in objective row
+    int x1_pos = 0;
+    int x2_pos = 1;
+    int x3_pos = x2_pos + SERV;
+    int x4_pos = x3_pos + SERV;
+
+
     // constraint 1
-    CoinPackedVector row1;
-    row1.insert(0,1);
-    row1.insert(1,0);
-    row1.insert(2,0);
-    row1.insert(3,0);
-    row_lb[0] = 0;
-    row_ub[0] = m1;
+    CoinPackedVector row1 = base_vector;
+    row1.setElement(x1_pos,1.0);
+    row_lb[current_row] = 0;
+    row_ub[current_row] = m1;
+    matrix->appendRow(row1);
+    current_row++;
 
     // constraint 2
-    CoinPackedVector row2;
-    row2.insert(0,0);
-    row2.insert(1,/* sum_serv(x2[i]) */);
-    row2.insert(2,0);
-    row2.insert(3,0);
-    row_lb[1] = m2;
-    row_ub[1] = si->getInfinity();
+    for (int i = 0; i<SERV; i++) {
+        CoinPackedVector row2 = base_vector;
+        // ADD ANOTHER FOR LOOP HERE:
+        row2.setElement(x2_pos+i,1.0);
+        for (int j = 1; j<=SERV; j++) {
+            row2.setElement(x2_pos+((i+j)%SERV),-1.0);
+        }
+        row_lb[current_row] = m2;
+        row_ub[current_row] = si->getInfinity();
+        matrix->appendRow(row2);
+        current_row++;
+    }
 
     // constraint 3
-    CoinPackedVector row3;
-    row3.insert(0,0);
-    row3.insert(1,/* -sum_serv[x2[i]] */);
-    row3.insert(2,/* sum_rack(w2*x3[i]) */);
-    row3.insert(3,0);
-    row_lb[2] = 0;
-    row_ub[2] = si->getInfinity();
+    for (int i = 0; i<RACK; i++) {
+        for (int j = 0; j<SERV; j++) {
+            CoinPackedVector row5 = base_vector;
+            row5.setElement(x3_pos+i, w2); 
+            for (int k = 1; k<=RACK; k++) {
+                row5.setElement(x3_pos+((i+k)%RACK),-w2);
+            }
+            row5.setElement(x2_pos+j, -1.0);
+            for (int k = 1; k<=SERV; k++) {
+                row5.setElement(x3_pos+((j+k)%SERV),1.0);
+            }
+            row_lb[current_row] = 0;
+            row_ub[current_row] = si->getInfinity();
+            matrix->appendRow(row5);
+            current_row++;
+    }
+
 
     // constraint 4
-    CoinPackedVector row4;
-    row4.insert(0,0);
-    row4.insert(1,0);
-    row4.insert(2,/* sum_rack(w1[i]*x3[i]) */);
-    row4.insert(3,0);
-    row_lb[3] = 0;
-    row_ub[3] = m1;
+    for (int i = 0; i<RACK; i++) {
+        CoinPackedVector row4;
+        row4.setElement(x3_pos+i, w1[i]); 
+        for (int j = 1; j<=RACK; j++) {
+            row4.setElement(x3_pos+((i+j)%RACK),-w1[(i+j)%RACK]);
+        }
+        row_lb[current_row] = 0;
+        row_ub[current_row] = m1;
+        matrix->appendRow(row4);
+        current_row++;
+    }
 
     // constraint 5
-    CoinPackedVector row5;
-    row5.insert(0,0);
-    row5.insert(1,/* sum_rack(w3[i]*x2[i]) */);
-    row5.insert(2,0);
-    row5.insert(3,-1.0);
-    row_lb[4] = 0;
-    row_ub[4] = 0;
+    for (int i = 0; i<SERV; i++) {
+        CoinPackedVector row5 = base_vector;
+        // set x4 as -1.0
+        row5.setElement(x4_pos,-1.0);
+        row5.setElement(x3_pos+i, w3[i]);
+        for (int j = 1; j<=SERV; j++) {
+            row5.setElement(x3_pos+((i+j)%SERV),-w3[(i+j)%SERV]);
+        }
+        row_lb[current_row] = 0;
+        row_ub[current_row] = 0;
+        matrix->appendRow(row5);
+        current_row++;
+    }
 
     // constraint 6
-    CoinPackedVector row6;
-    row6.insert(0,0);
-    row6.insert(1,0);
-    row6.insert(2,0);
-    row6.insert(3,1.0);
-    row_lb[5] = 0;
-    row_ub[5] = m4;
+    CoinPackedVector row6 = base_vector;
+    row6.setElement(x4_pos,1.0);
+    row_lb[current_row] = 0;
+    row_ub[current_row] = m4;
+    matrix->appendRow(row6);
+    current_row++;
 
     // constraint 7
-    // to jest problematyczne, kazdy element wektora ma swoj upper bound
-    CoinPackedVector row7;
-    row7.insert(0,0);
-    row7.insert(1,serv[i]);
-    row7.insert(2,0);
-    row7.insert(3,1.0);
-    row_lb[6] = 0;
-    row_ub[6] = M2[i];
+    for (int i = 0; i<SERV; i++) {
+        CoinPackedVector row7 = base_vector;
+        row7.setElement(current_row+i,1.0);
+        row_lb[current_row] = 0;
+        row_ub[current_row] = M2[i];
+        matrix->appendRow(row7);
+        current_row++;
+    }
 
     // constraint 8
-    // to też jest problematyczne
-    CoinPackedVector row8;
-    row8.insert(0,0);
-    row8.insert(1,0);
-    row8.insert(2,rack[i]);
-    row8.insert(3,1.0);
-    row_lb[7] = 0;
-    row_ub[7] = M2[i];
-
-    // constraint 9
-    // i to również, ograniczenie jest na danych, nie na zmiennych?
-    CoinPackedVector row9;
-    row9.insert(0,0);
-    row9.insert(1,0);
-    row9.insert(2,0);
-    row9.insert(3,0);
-    row_lb[8] = 0;
-    row_ub[8] = 0;
-
-    // constraint 10
-    // i to również, ograniczenie jest na danych, nie na zmiennych?
-    CoinPackedVector row10;
-    row10.insert(0,0);
-    row10.insert(1,0);
-    row10.insert(2,0);
-    row10.insert(3,0);
-    row_lb[9] = 0;
-    row_ub[9] = 0;
-
-    matrix->appendRow(row1);
-    matrix->appendRow(row2);
-    matrix->appendRow(row3);
-    matrix->appendRow(row4);
-    matrix->appendRow(row5);
-    matrix->appendRow(row6);
-    matrix->appendRow(row7);
-    matrix->appendRow(row8);
-    matrix->appendRow(row9);
-    matrix->appendRow(row10);
-
+    for (int i = 0; i<RACK; i++) {
+        CoinPackedVector row8 = base_vector;
+        row8.setElement(current_row+i,1.0);
+        row_lb[current_row] = 0;
+        row_ub[current_row] = M3[i];
+        matrix->appendRow(row8);
+        current_row++;
+    }
 
     //load the problem to OSI
     si->loadProblem(*matrix, col_lb, col_ub, objective, row_lb, row_ub);

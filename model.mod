@@ -67,8 +67,11 @@ s.t. c5: sum{serv in SERV} (w3[serv]*x2[serv]) == x4;			# zaleznosc ilosci maszy
 s.t. c6: x4 <= m4;							# nie mozemy przekroczyc poboru pradu przez wszystkie maszyny
 s.t. c7{serv in SERV}: x2[serv] <= M2[serv];				# dla kazdego producenta serwerow: nie mozemy przekroczyc ilosci dostepnych
 s.t. c8{rack in RACK}: x3[rack] <= M3[rack];				# dla kazdego producenta rackow: nie mozemy przekroczyc liczby dostepnych
-s.t. c9: sum{serv in SERV} M2[serv] >= m2;				# suma dostepnych musi byc wieksza od minimalnej liczby
-s.t. c10: sum{rack in RACK} M3[rack] >= m3;				# suma dostepnych musi byc wieksza od minimalnej liczby
+
+# validate c9 and c10 as user input
+#s.t. c9: sum{serv in SERV} M2[serv] >= m2;				# suma dostepnych musi byc wieksza od minimalnej liczby
+#s.t. c10: sum{rack in RACK} M3[rack] >= m3;				# suma dostepnych musi byc wieksza od minimalnej liczby
+
 
 # TYCH DANYCH OCZEKUJE MODEL, mogą być w osobnym pliku
 # Oczywiscie odpowiednie wymiary macierzy musza sie zgadzac.
