@@ -92,6 +92,7 @@ int main (int argc, const char *argv[])
             row_ub[current_row] = si->getInfinity();
             matrix->appendRow(row5);
             current_row++;
+        }
     }
 
 
