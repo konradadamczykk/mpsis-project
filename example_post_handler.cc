@@ -36,7 +36,7 @@ int main (int argc, const char *argv[])
     objective[x4_pos] = l4;
 
     // variable bounds -> <0;inf>
-    for (int i = 0; i<SERV+RACK+2; i++) {
+    for (int i = 0; i<n_cols; i++) {
         col_lb[i] = 0.0;
         col_ub[i] = si->getInfinity();
     }
