@@ -19,15 +19,21 @@ int main (int argc, const char *argv[])
     double * col_lb = new double[n_cols]; //the column lower bounds
     double * col_ub = new double[n_cols]; //the column upper bounds
 
+    // WE ALSO NEED TO KNOW x1, first x2, first x3 and x4 positions in objective row
+    int x1_pos = 0;
+    int x2_pos = 1;
+    int x3_pos = x2_pos + SERV;
+    int x4_pos = x3_pos + SERV;
+
     //minimize z: x1*l1 + (sum{serv in SERV} L2[serv]*x2[serv]) + (sum{rack in RACK} L3[rack]*x3[rack]) + x4*l4;
-    objective[0] = l1;
+    objective[x1_pos] = l1;
     for (int i = 0; i<SERV; i++) {
-            objective[i+1] = L2[i];
+            objective[x2_pos+i] = L2[i];
     }
     for (int i = 0; i<RACK; i++) {
-            objective[i+SERV+1] = L3[i];
+            objective[x3_pos+i] = L3[i];
     }
-    objective[SERV+RACK+1] = l4;
+    objective[x4_pos] = l4;
 
     // variable bounds -> <0;inf>
     for (int i = 0; i<SERV+RACK+2; i++) {
@@ -47,12 +53,6 @@ int main (int argc, const char *argv[])
     int indices[n_rows];
     const CoinPackedVector base_vector = new CoinPackedVector(n_rows, indices, 0.0);
     int current_row = 0;
-    // WE ALSO NEED TO KNOW x1, first x2, first x3 and x4 positions in objective row
-    int x1_pos = 0;
-    int x2_pos = 1;
-    int x3_pos = x2_pos + SERV;
-    int x4_pos = x3_pos + SERV;
-
 
     // constraint 1
     CoinPackedVector row1 = base_vector;
