@@ -16,7 +16,7 @@ int main (int argc, const char *argv[])
 	int L3[l3] = { 10000 };
     int m1 = 100000;
 	int m2 = 200000;
-	int M2[l2] = { 80000, 130000,  };
+	int M2[l2] = { 80000, 130000 };
 	int m3 = 200000;
 	int M3[l3] = { 10000 };
 	int m4 = 65000000;
@@ -66,7 +66,7 @@ int main (int argc, const char *argv[])
     for (int i=0; i<n_rows; i++) {
         indices[i] = i;
     }
-    const CoinPackedVector base_vector = new CoinPackedVector(n_rows, indices, 0.0);
+    const CoinPackedVector base_vector = CoinPackedVector(n_rows, indices, 0.0);
 
     int current_row = 0;
     // constraint 1
@@ -102,7 +102,7 @@ int main (int argc, const char *argv[])
     current_row++;
     
     // constraint 4
-    CoinPackedVector row4;
+    CoinPackedVector row4 = base_vector;
     for (int i = 0; i<l3; i++) {
         row4.setElement(x3_pos+i, w1[i]); 
     }
@@ -155,21 +155,28 @@ int main (int argc, const char *argv[])
     //load the problem to OSI
     si->loadProblem(*matrix, col_lb, col_ub, objective, row_lb, row_ub);
 
-    // Pass the solver with the problem to be solved to CbcModel 
-    CbcModel model(*si);
+    // ClpSimplex * clpPointer;
+    // clpPointer = (dynamic_cast<OsiClpSolverInterface *>(si))->getModelPtr();
+    // clpPointer->setLogLevel(0);
+    // clpPointer->setMaximumIterations(10);
+    // Could tell Clp many other things
 
-    // Do complete search
-    model.branchAndBound();
-
-    /* Print the solution.  CbcModel clones the solver so we
-    need to get current copy from the CbcModel */
-    int numberColumns = model.solver()->getNumCols();
-
-    const double * solution = model.bestSolution();
-
-    for (int iColumn=0;iColumn<numberColumns;iColumn++) {
-        double value=solution[iColumn];
-        if (fabs(value)>1.0e-7&&model.solver()->isInteger(iColumn)) 
-        printf("%d has value %g\n",iColumn,value);
+    // Solve the (relaxation of the) problem
+    si->initialSolve();
+    // Check the solution
+    if ( si->isProvenOptimal() )
+    {
+        std::cout << "Found optimal solution!" << std::endl;
+        std::cout << "Objective value is " << si->getObjValue() << std::endl;
+        int n = si->getNumCols();
+        const double *solution;
+        solution = si->getColSolution();
+        // We could then print the solution or examine it.
     }
+    else
+    {
+        std::cout << "Didn’t find optimal solution." << std::endl;
+        // Could then check other status functions.
+    }
+    return 0;
 }
