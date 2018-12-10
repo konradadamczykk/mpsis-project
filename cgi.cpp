@@ -113,6 +113,9 @@ static void process(struct kreq *r) {
          for(int k=0; k<l2; k++) {
            jsmntok_t *g = &tokens[i+k+2];
            M2[k] = atoi(strndup(p->parsed.s + g->start, g->end-g->start));
+           char str1[10];
+           sprintf(str1, "M2 %d\n", M2[k]);
+           khttp_puts(r, str1);
          }
          i += tokens[i+1].size+1;
        }
@@ -123,6 +126,9 @@ static void process(struct kreq *r) {
          for(int k=0; k<l3; k++) {
            jsmntok_t *g = &tokens[i+k+2];
            M3[k] = atoi(strndup(p->parsed.s + g->start, g->end-g->start));
+           char str1[10];
+           sprintf(str1, "M3 %d\n", M3[k]);
+           khttp_puts(r, str1);
          }
          i += tokens[i+1].size+1;
        }
@@ -187,11 +193,11 @@ static void process(struct kreq *r) {
     matrix->setDimensions(0, n_cols);
 
     // Base vector with all zeros
-    int indices[n_rows];
-    for (int i=0; i<n_rows; i++) {
+    int indices[n_cols];
+    for (int i=0; i<n_cols; i++) {
         indices[i] = i;
     }
-    const CoinPackedVector base_vector = CoinPackedVector(n_rows, indices, 0.0);
+    const CoinPackedVector base_vector = CoinPackedVector(n_cols, indices, 0.0);
 
     int current_row = 0;
     // constraint 1
