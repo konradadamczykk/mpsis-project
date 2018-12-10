@@ -16,7 +16,7 @@
             referrer: "no-referrer", // no-referrer, *client
             body: JSON.stringify(data), // body data type must match "Content-Type" header
         })
-        .then(response => response.json()); // parses response to JSON
+	.then(resp => resp)
     }
 
     $('#num_server_vendors').on('change', () => {
@@ -91,7 +91,7 @@
 
     $("#submit").on('click', () => {
 
-        var url = "";
+        var url = "http://192.168.58.129/cgi-bin/test2";
         
         var m2_cost = $("#m2_cost").val();
 
@@ -143,7 +143,9 @@
 
         console.log(JSON.stringify(form_data));
         postData(url, form_data)
-          .then(data => console.log(JSON.stringify(data)))
+	  .then(resp => resp.text())
+          .then(resp =>$("#response").html(resp))//$("#response").html(resp))
+	  .then(data => console.log(JSON.stringify(data)))
           .catch(error => console.error(error));
 
     });
