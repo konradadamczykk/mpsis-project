@@ -38,7 +38,7 @@ param m4, integer, >= 0;
 # Wspolczynniki
 # w1 - powierzchnia (m2) racka producenta i
 # w2 - liczba maszyn w racku (staly rozmiar)
-# w3 - pobor pradu (miesieczny, kWh) przez jeden serwer
+# w3 - pobor pradu (miesieczny, kWh) przez jeden serwer producenta i
 
 param w1{rack in RACK}, integer, >= 0;
 param w2, integer, >= 0;
