@@ -8,3 +8,67 @@ and get an output (hopefully, in finite time).
 
 Description and parameters are available at: 
 https://docs.google.com/document/d/1_DjOO3PhC_0tffYeBRBqgxOU_NxOj59YkSqKyrCc54M/edit
+
+# How to use
+
+Install COIN-OR from https://www.coin-or.org/downloading/
+
+Install kcgi from https://kristaps.bsd.lv/kcgi/
+```
+./configure
+make
+make install
+```
+
+Install jsmn from https://github.com/zserge/jsmn
+```
+make 
+make install
+```
+
+## Compilation:
+```
+g++ cgi.cpp -lkcgi -L jsmn -ljsmn -lCoinUtils -lOsiClp -o cgi -lz
+```
+
+## Apache config:
+
+/etc/apache2/sites-available/000-default.conf - in VirtualHost section
+
+```
+ScriptAlias /cgi/bin/ "/var/www/cgi-bin/"
+<Directory "var/www/cgi-bin/">
+	Options +ExecCGI
+	AddHandler cgi-script .cgi
+</Directory>
+```
+
+## Running
+
+Post to 
+```
+http://<yourip>/cgi-bin/cgi
+```
+
+with body like
+```
+{
+	"m2_cost":"200",
+	"num_server_vendors":"2",
+	"cost_server":["120","240"],
+	"max_num_serv_vendor":["10","1000"],
+	"monthly_elec_server_vendor":["20","10"],
+	"num_rack_vendors":"2",
+	"rack_surface_vendor":["14","24"],
+	"rack_cost_vendor":["20","20"],
+	"rack_max_num_vendor":["2400","2500"],
+	"num_serv_in_rack_vendor":"2",
+	"kWh_cost":"2",
+	"max_m2":"2000",
+	"min_all_servers":"200",
+	"min_num_racks":"100",
+	"max_kwh_usage":"200000"
+}
+```
+
+# ENJOY
