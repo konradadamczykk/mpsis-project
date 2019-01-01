@@ -1,0 +1,92 @@
+# Przygotowane dane na potrzeby przypadków testowych
+# Sekcję data należy przekopiować do modelu (plik model.mod)
+# a następnie uruchomić solver poleceniem:
+# 
+# $ cbc model.mod% -solve
+#
+# Poniżej zamieszczono również JSONa z tymi samymi danymi.
+#
+
+data;
+
+param l1 := 200;
+param l2 := 2;
+param l3 := 2;
+param l4 := 2;
+
+param : L2 :=
+1 120
+2 240
+;
+
+param : L3 :=
+1 20
+2 20
+;
+
+param m1 := 2000;
+param m2 := 200;
+param : M2 :=
+1 10
+2 1000
+;
+
+param m3 := 100;
+param : M3 :=
+1 2400
+2 2500
+;
+
+param m4 := 200000;
+
+param : w1 :=
+1 14
+2 24
+;
+
+param w2 := 2;
+
+param : w3 :=
+1 20
+2 10
+;
+
+end;
+
+# JSON z danymi na potrzeby aplikacji do weryfikacji krzyżowej (cross-verify)
+#
+# {  
+#    "m2_cost":"200",
+#    "num_server_vendors":"2",
+#    "cost_server":[  
+#       "120",
+#       "240"
+#    ],
+#    "max_num_serv_vendor":[  
+#       "10",
+#       "1000"
+#    ],
+#    "monthly_elec_server_vendor":[  
+#       "20",
+#       "10"
+#    ],
+#    "num_rack_vendors":"2",
+#    "rack_surface_vendor":[  
+#       "14",
+#       "24"
+#    ],
+#    "rack_cost_vendor":[  
+#       "20",
+#       "20"
+#    ],
+#    "rack_max_num_vendor":[  
+#       "2400",
+#       "2500"
+#    ],
+#    "num_serv_in_rack_vendor":"2",
+#    "kWh_cost":"2",
+#    "max_m2":"2000",
+#    "min_all_servers":"200",
+#    "min_num_racks":"100",
+#    "max_kwh_usage":"200000"
+# }
