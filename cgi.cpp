@@ -5,12 +5,17 @@
 #include <kcgi.h>
 #include <kcgihtml.h>
 #include <stdio.h>
+#include <iostream>
 #include <string.h>
-#include "jsmn/jsmn.h"
+#include "jsmn2/jsmn.h"
 #include <limits.h>
 #include <stdlib.h>
 #include "coin/CbcModel.hpp"
 #include "coin/OsiClpSolverInterface.hpp"
+#include <pqxx/pqxx>
+
+using namespace pqxx;
+using namespace std;
 
 enum key {
   KEY__MAX
@@ -25,7 +30,10 @@ const char *const pages[PAGE__MAX] = {
   "index",
 };
 
-static const struct kvalid key = { kvalid_stringne, ""};
+static const struct kvalid keys[2] = {
+  {kvalid_stringne, ""},
+  {kvalid_int, "id"}
+};
 
 static int jsoneq(const char *json, jsmntok_t *tok, const char *s) {
   if(tok->type == JSMN_STRING 
@@ -34,6 +42,57 @@ static int jsoneq(const char *json, jsmntok_t *tok, const char *s) {
     return 0;
   }
   return -1;
+}
+
+static void process_get(struct kreq *r) {
+  struct kpair *p;
+  if (p = r->fieldmap[1]) {
+    string sql;
+    int id = p->parsed.i;
+    string started;
+    string finished;
+    string results;
+
+    try {
+      connection C("dbname = optimal user = test password = password hostaddr = 127.0.0.1 port = 5432");
+      if (!C.is_open()) {
+         khttp_puts(r, "Can't open database.");
+         return;
+      }
+
+      sql = "SELECT * from optimalization2 where id = ";
+      sql += to_string(id);
+      nontransaction N(C);
+      result R( N.exec( sql ));
+      id = R[0][0].as<int>();
+      started = R[0][1].as<string>();
+      if(!R[0][2].is_null()) {
+        finished = R[0][2].c_str();
+        results = R[0][3].c_str();
+      }
+      C.disconnect ();
+    } catch (const std::exception &e) {
+      khttp_puts(r, e.what());
+      return;
+    }
+
+    char const *start = started.c_str();
+    khttp_puts(r, "Your calculation start date is: ");
+    khttp_puts(r, start);
+    if(!finished.empty()) {
+      char const *finish = finished.c_str();
+      char const *result_c = results.c_str();
+      khttp_puts(r, "</br>Finish date: ");
+      khttp_puts(r, finish);
+      khttp_puts(r, "</br>Result: ");
+      khttp_puts(r, result_c);
+    } else {
+      khttp_puts(r, "</br> It's not finished yet! Please come later!");
+    }
+
+
+  } else if (r->fieldnmap[1]) khttp_puts(r, "Bad data format");
+  else khttp_puts(r, "Data not provided.");
 }
 
 static void process(struct kreq *r) {
@@ -113,9 +172,6 @@ static void process(struct kreq *r) {
          for(int k=0; k<l2; k++) {
            jsmntok_t *g = &tokens[i+k+2];
            M2[k] = atoi(strndup(p->parsed.s + g->start, g->end-g->start));
-           char str1[10];
-           sprintf(str1, "M2 %d\n", M2[k]);
-           khttp_puts(r, str1);
          }
          i += tokens[i+1].size+1;
        }
@@ -126,9 +182,6 @@ static void process(struct kreq *r) {
          for(int k=0; k<l3; k++) {
            jsmntok_t *g = &tokens[i+k+2];
            M3[k] = atoi(strndup(p->parsed.s + g->start, g->end-g->start));
-           char str1[10];
-           sprintf(str1, "M3 %d\n", M3[k]);
-           khttp_puts(r, str1);
          }
          i += tokens[i+1].size+1;
        }
@@ -154,6 +207,36 @@ static void process(struct kreq *r) {
        }
 	 }
 //all params ready!
+    string sql;
+    int id;
+
+    try {
+      connection C("dbname = optimal user = test password = password hostaddr = 127.0.0.1 port = 5432");
+      if (!C.is_open()) {
+         khttp_puts(r, "Can't open database.");
+         return;
+      }
+
+      sql = "INSERT INTO optimalization2 DEFAULT VALUES returning id";
+
+      nontransaction N(C);
+      result R( N.exec( sql ));
+      id = R[0][0].as<int>();
+      C.disconnect ();
+    } catch (const std::exception &e) {
+      khttp_puts(r, e.what());
+      return;
+    }
+
+    string s = to_string(id);
+    char const *pchar = s.c_str();
+
+    khttp_puts(r, "Your calculation id is ");
+    khttp_puts(r, pchar);
+    khttp_puts(r, ". You can look <a href='/cgi-bin/test2?id=");
+    khttp_puts(r, pchar);
+    khttp_puts(r, "'>here</a> for more details!");
+
 
     OsiClpSolverInterface *si = new OsiClpSolverInterface;
     int x1_cols = 1; int x4_cols = 1;
@@ -286,31 +369,51 @@ static void process(struct kreq *r) {
     //load the problem to OSI
     si->loadProblem(*matrix, col_lb, col_ub, objective, row_lb, row_ub);
 
-    //ClpSimplex * clpPointer;
-    //clpPointer = (dynamic_cast<OsiClpSolverInterface *>(si))->getModelPtr();
-    //clpPointer->setLogLevel(0);
+    ClpSimplex * clpPointer;
+    clpPointer = (dynamic_cast<OsiClpSolverInterface *>(si))->getModelPtr();
+    clpPointer->setLogLevel(0);
     // clpPointer->setMaximumIterations(10);
     // Could tell Clp many other things
 
     // Solve the (relaxation of the) problem
     si->initialSolve();
     // Check the solution
-    if ( si->isProvenOptimal() )
-    {
-        khttp_puts(r,"Found optimal solution!");
 
+
+    try {
+      connection C("dbname = optimal user = test password = password hostaddr = 127.0.0.1 port = 5432");
+      if ( !C.is_open()) {
+        return;
+      }
+      
+      sql = "UPDATE optimalization2 set finished = current_timestamp, result = '";
+      
+      if ( si->isProvenOptimal() ) {
         //khttp_puts(r,"Objective value is " << si->getObjValue());
         int n = si->getNumCols();
         const double *solution;
         solution = si->getColSolution();
         // We could then print the solution or examine it.
-    }
-    else
-    {
-        khttp_puts(r, "Didn’t find optimal solution.");
+
+        sql += to_string(si->getObjValue());
+
+      } else {
+        sql += "Didn’t find optimal solution.";
         // Could then check other status functions.
+      }
+
+      sql += "' where id = ";
+      sql += to_string(id);  
+      work W(C);
+      
+          /* Execute SQL query */
+      W.exec( sql );
+      W.commit();
+      C.disconnect ();
+    } catch (const std::exception &e) {
+      return;
     }
-   } else if (r->fieldnmap[0]) khttp_puts(r, "Bad data format");
+    } else if (r->fieldnmap[0]) khttp_puts(r, "Bad data format");
    else khttp_puts(r, "Data not provided.");
 }
 
@@ -321,7 +424,7 @@ static enum khttp sanitise(const struct kreq *r) {
     return KHTTP_404;
   else if (KMIME_TEXT_HTML != r->mime)
     return KHTTP_404;
-  else if (KMETHOD_POST != r->method)
+  else if (KMETHOD_GET != r->method && KMETHOD_POST != r->method)
     return KHTTP_405;
   return KHTTP_200;
 };
@@ -330,19 +433,24 @@ int main(void) {
   struct kreq r;
   enum khttp er;
 
-  if (KCGI_OK != khttp_parse(&r, &key, 1, pages, PAGE__MAX, PAGE_INDEX))
+  if (KCGI_OK != khttp_parse(&r, keys, 2, pages, PAGE__MAX, PAGE_INDEX))
     return 0;
   if (KHTTP_200 != (er = sanitise(&r))) {
     khttp_head(&r, kresps[KRESP_STATUS], "%s", khttps[er]);
     khttp_head(&r, kresps[KRESP_CONTENT_TYPE], "%s", kmimetypes[KMIME_TEXT_PLAIN]);
     khttp_body(&r);
     if(KMIME_TEXT_HTML == r.mime)
-      khttp_puts(&r, "Could not");
+      khttp_puts(&r, "Could not do it");
   } else {
     khttp_head(&r, kresps[KRESP_STATUS], "%s", khttps[KHTTP_200]);
     khttp_head(&r, kresps[KRESP_CONTENT_TYPE], "%s", kmimetypes[r.mime]);
     khttp_body(&r);
-    process(&r);
+    if(r.method == KMETHOD_POST) {
+      process(&r);
+    } else {
+      process_get(&r);
+    }
+
   }
   khttp_free(&r);
   return 0;
