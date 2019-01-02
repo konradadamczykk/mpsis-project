@@ -26,9 +26,35 @@ make
 make install
 ```
 
+Install postgresql
+Create user `test` password `qwerty`
+Create database `omptim`
+In database create table:
+```
+CREATE TABLE optimalization2 (
+	id SERIAL primary key,
+	created timestamp default current_timestamp, 
+	finished default NULL,
+	result varchar[300] default NULL
+);
+```
+Enable connection from 127.0.0.1 if they're disabled.
+
+Install libpq-dev
+```
+apt-get install libpq-dev
+```
+
+Install pqxx from https://github.com/jtv/libpqxx
+```
+./configure
+make install
+```
+
+
 ## Compilation:
 ```
-g++ cgi.cpp -lkcgi -L jsmn -ljsmn -lCoinUtils -lOsiClp -o cgi -lz
+g++ cgi.cpp -lkcgi -L jsmn -ljsmn -lCoinUtils -lOsiClp -lpqxx -lpq -o cgi -lz
 ```
 
 ## Apache config:
@@ -36,8 +62,8 @@ g++ cgi.cpp -lkcgi -L jsmn -ljsmn -lCoinUtils -lOsiClp -o cgi -lz
 /etc/apache2/sites-available/000-default.conf - in VirtualHost section
 
 ```
-ScriptAlias /cgi/bin/ "/var/www/cgi-bin/"
-<Directory "var/www/cgi-bin/">
+ScriptAlias /cgi-bin/ "/var/www/cgi-bin/"
+<Directory "/var/www/cgi-bin/">
 	Options +ExecCGI
 	AddHandler cgi-script .cgi
 </Directory>
@@ -70,5 +96,12 @@ with body like
 	"max_kwh_usage":"200000"
 }
 ```
+
+Get to
+```http://<yourip>/cgi-bin/cgi?id=<id>```
+to obtain results from database
+
+Frontend at
+```http://<yourip>/frontend/```
 
 # ENJOY
